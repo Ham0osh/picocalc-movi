@@ -28,7 +28,7 @@ set(PICO_BOARD pico CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(picocalc-text-starter C CXX ASM)
+project(PicoCalc_MoviCon_v1.0 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -36,7 +36,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(picocalc-text-starter
+add_executable(PicoCalc_MoviCon_v1.0
         main.c
         commands.c
         commands.h
@@ -86,31 +86,31 @@ add_executable(picocalc-text-starter
         api/freefly/simple_buffer.h
         )
 
-pico_set_program_name(picocalc-text-starter "picocalc-text-starter")
-pico_set_program_version(picocalc-text-starter "0.14")
+pico_set_program_name(PicoCalc_MoviCon_v1.0 "PicoCalc_MoviCon_v1.0")
+pico_set_program_version(PicoCalc_MoviCon_v1.0 "1.0")
 
 
 # Generate PIO header
-pico_generate_pio_header(picocalc-text-starter ${CMAKE_CURRENT_LIST_DIR}/drivers/audio.pio)
+pico_generate_pio_header(PicoCalc_MoviCon_v1.0 ${CMAKE_CURRENT_LIST_DIR}/drivers/audio.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(picocalc-text-starter 0)
-pico_enable_stdio_usb(picocalc-text-starter 0)
+pico_enable_stdio_uart(PicoCalc_MoviCon_v1.0 0)
+pico_enable_stdio_usb(PicoCalc_MoviCon_v1.0 0)
 
-# Turn on all warnings
-target_compile_options(picocalc-text-starter PRIVATE -Wall -Werror)
+# Turn on all warnings (but don't treat as errors - we have unused defs that will be used later)
+target_compile_options(PicoCalc_MoviCon_v1.0 PRIVATE -Wall)
 
 # Add the standard library to the build
-target_link_libraries(picocalc-text-starter
+target_link_libraries(PicoCalc_MoviCon_v1.0
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(picocalc-text-starter PRIVATE
+target_include_directories(PicoCalc_MoviCon_v1.0 PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(picocalc-text-starter
+target_link_libraries(PicoCalc_MoviCon_v1.0
         pico_stdlib
         pico_printf
         pico_float
@@ -123,5 +123,5 @@ target_link_libraries(picocalc-text-starter
         hardware_clocks
         )
 
-pico_add_extra_outputs(picocalc-text-starter)
+pico_add_extra_outputs(PicoCalc_MoviCon_v1.0)
 
