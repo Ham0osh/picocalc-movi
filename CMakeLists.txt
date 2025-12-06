@@ -44,6 +44,14 @@ add_executable(picocalc-text-starter
         songs.h
         tests.c
         tests.h
+        movi_controller.c
+        movi_controller.h
+        movi_display.c
+        movi_display.h
+        movi_input.c
+        movi_input.h
+        qx_uart.c
+        qx_uart.h
         drivers/audio.c
         drivers/audio.h
         drivers/clib.c
@@ -66,6 +74,16 @@ add_executable(picocalc-text-starter
         drivers/sdcard.h
         drivers/southbridge.c
         drivers/southbridge.h
+        api/freefly/QX_Protocol.c
+        api/freefly/QX_Protocol.h
+        api/freefly/QX_Protocol_App.c
+        api/freefly/QX_Protocol_App.h
+        api/freefly/QX_Parsing_Functions.c
+        api/freefly/QX_Parsing_Functions.h
+        api/freefly/QX_App_Config.h
+        api/freefly/FreeflyAPI.h
+        api/freefly/simple_buffer.c
+        api/freefly/simple_buffer.h
         )
 
 pico_set_program_name(picocalc-text-starter "picocalc-text-starter")

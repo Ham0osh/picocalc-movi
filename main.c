@@ -8,7 +8,9 @@
 #include "drivers/keyboard.h"
 #include "drivers/onboard_led.h"
 
-#include "commands.h"
+#include "movi_controller.h"
+#include "movi_display.h"
+#include "movi_input.h"
 
 bool power_off_requested = false;
 
@@ -17,53 +19,9 @@ void set_onboard_led(uint8_t led)
     led_set(led & 0x01);
 }
 
-#include <ctype.h>
-
-void str_to_lower(char *s) {
-    while (*s) {
-        *s = tolower((unsigned char)*s);
-        s++;
-    }
-}
-
-void readline(char *buffer, size_t size)
-{
-    size_t index = 0;
-    while (true)
-    {
-        char ch = getchar();
-        if (ch == 0x04) // Ctrl+D to debug
-        {
-            printf("Entering debug mode...\n");
-            __breakpoint();
-        }
-        else if (ch == '\n' || ch == '\r')
-        {
-            printf("\n");
-            break; // End of line
-        }
-        else if ((ch == 0x08 || ch == 0x7F) && index > 0) // Backspace or Delete
-        {
-            index--;
-            buffer[index] = '\0'; // Remove last character
-            printf("\b \b"); // Erase the last character
-        }
-        else if (ch >= 0x20 && ch < 0x7F && index < size - 1) // Printable characters
-        {
-            buffer[index++] = ch;
-            putchar(ch);
-        }
-    }
-    buffer[index] = '\0'; // Null-terminate the string
-}
-
 int main()
 {
-    char buffer[40];
-
-    // Initialize the LED driver and set the LED callback
-    // If the LED driver fails to initialize, we can still run the text starter
-    // without LED support, so we pass NULL to picocalc_init.
+    // Initialize hardware
     int led_init_result = led_init();
 
     stdio_init_all();
@@ -72,29 +30,46 @@ int main()
         display_set_led_callback(set_onboard_led);
     }
 
-    printf("\033c\033[1m\n Hello from the PicoCalc Text Starter!\033[0m\n\n");
-    printf("      Contributed to the community\n");
-    printf("            by Blair Leduc.\n\n");
-    printf("Type \033[4mhelp\033[0m for a list of commands.\n\n");
+    // Initialize Movi controller system
+    movi_display_init();
+    movi_input_init();
+    movi_init();
 
-    // A very simple REPL
-    printf("\033[qReady.\n");
+    printf("\033c\033[1m\n=== MOVI PRO GIMBAL CONTROLLER ===\033[0m\n");
+    printf("Initializing...\n\n");
+
+    // Give gimbal time to initialize
+    sleep_ms(500);
+
+    // Main control loop (50Hz target)
+    const uint32_t loop_period_ms = 20;  // 50Hz = 20ms per iteration
+    uint64_t last_update_us = time_us_64();
+
     while (true)
     {
-        readline(buffer, sizeof(buffer));
-        if (strlen(buffer) == 0)
+        uint64_t now_us = time_us_64();
+        uint32_t elapsed_us = now_us - last_update_us;
+
+        if (elapsed_us >= (loop_period_ms * 1000))
         {
-            continue; // Skip empty input
+            // Update controllers
+            movi_update();
+            movi_input_update();
+            movi_display_update();
+
+            last_update_us = now_us;
         }
 
-        printf("\033[1q\n"); // Turn on the LED so the user knows input is being processed
+        // Check for keyboard input
+        if (keyboard_key_available())
+        {
+            char key = keyboard_get_key();
+            movi_input_handle_key(key);
+        }
 
-        // Convert the input to lowercase for case-insensitive command matching
-        str_to_lower(buffer);
-        
-        run_command(buffer); // Call the command handler
-
-        printf("\033[q\nReady. %s\n", power_off_requested ? "(power off requested)" : ""); // Turn off the LED and prompt for input again
-        power_off_requested = false;
+        // Small sleep to prevent busy-waiting
+        sleep_us(100);
     }
+
+    return 0;
 }
